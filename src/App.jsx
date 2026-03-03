@@ -222,14 +222,8 @@ const CEOMessage = () => {
                         className="relative flex justify-center md:justify-end"
                     >
                         <div className="relative w-full max-w-sm">
-                            <div className="aspect-[3/4] rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-deep-navy to-electric-blue/20 flex items-center justify-center group">
-                                {/* CEO Profile Placeholder */}
-                                <div className="text-center p-8">
-                                    <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/20 group-hover:scale-110 transition-transform">
-                                        <User className="text-white w-8 h-8 opacity-50" />
-                                    </div>
-                                    <p className="text-white/60 font-medium text-xs">신뢰감 있는 대표님 사진<br />업로드 예정</p>
-                                </div>
+                            <div className="aspect-[3/4] rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-deep-navy to-electric-blue/20 group">
+                                <img src="/ceo.jpg" alt="박병태 대표" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                             </div>
                             <div className="absolute -bottom-4 -right-4 p-6 glass rounded-2xl border border-electric-blue/20 shadow-2xl">
                                 <p className="text-white font-bold text-lg mb-0.5">박병태</p>
