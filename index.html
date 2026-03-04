@@ -11,6 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -369,24 +371,24 @@
                 <form id="diagnosis-form" onsubmit="handleSubmit(event)" class="space-y-4 relative z-10">
                     <div>
                         <label
-                            class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">성함</label>
-                        <input type="text" required placeholder="홍길동"
+                            class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">존함</label>
+                        <input type="text" id="diag-name" required placeholder="홍길동"
                             class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-electric-blue/50 transition-colors">
                     </div>
                     <div>
                         <label
                             class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">회사명</label>
-                        <input type="text" required placeholder="핍트 (PiBT)"
+                        <input type="text" id="diag-company" required placeholder="핍트 (PiBT)"
                             class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-electric-blue/50 transition-colors">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">이메일
                             주소</label>
-                        <input type="email" required placeholder="contact@pibt.ai"
+                        <input type="email" id="diag-email" required placeholder="contact@pibt.ai"
                             class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-electric-blue/50 transition-colors">
                     </div>
-                    <button type="submit"
-                        class="w-full py-4 bg-electric-blue hover:bg-blue-600 text-white rounded-xl font-bold transition-all mt-6 shadow-lg shadow-blue-500/20">
+                    <button type="submit" id="diag-submit-btn"
+                        class="w-full py-4 bg-electric-blue hover:bg-blue-600 text-white rounded-xl font-bold transition-all mt-6 shadow-lg shadow-blue-500/20 flex items-center justify-center">
                         진단 리포트 신청하기
                     </button>
                 </form>
@@ -421,9 +423,15 @@
         lucide.createIcons();
 
         // Modal Logic
+        // Supabase Init
+        const supabaseUrl = 'https://ckanwbynvyuqxmenxvlr.supabase.co';
+        const supabaseKey = 'sb_publishable_HVZkkPEB7-5zzLqn93h5jA_PdKWJXWk';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
         const modal = document.getElementById('diagnosis-modal');
         const formContent = document.getElementById('modal-form-content');
         const successContent = document.getElementById('modal-success-content');
+        const submitBtn = document.getElementById('diag-submit-btn');
 
         function openModal() {
             modal.classList.add('active');
@@ -438,13 +446,46 @@
                 formContent.classList.remove('hidden');
                 successContent.classList.add('hidden');
                 document.getElementById('diagnosis-form').reset();
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '진단 리포트 신청하기';
             }, 300);
         }
 
-        function handleSubmit(e) {
+        async function handleSubmit(e) {
             e.preventDefault();
-            formContent.classList.add('hidden');
-            successContent.classList.remove('hidden');
+
+            const name = document.getElementById('diag-name').value;
+            const company = document.getElementById('diag-company').value;
+            const email = document.getElementById('diag-email').value;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                처리 중...
+            `;
+
+            try {
+                const { error } = await _supabase
+                    .from('diagnostic_requests')
+                    .insert([{
+                        name: name,
+                        company_name: company,
+                        email: email
+                    }]);
+
+                if (error) throw error;
+
+                formContent.classList.add('hidden');
+                successContent.classList.remove('hidden');
+            } catch (error) {
+                console.error('Error saving:', error);
+                alert('신청 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '진단 리포트 신청하기';
+            }
         }
 
         // Close modal on background click

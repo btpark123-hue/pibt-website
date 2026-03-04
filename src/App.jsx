@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from './supabase';
 import {
     BarChart3,
     BrainCircuit,
@@ -58,8 +59,6 @@ const Logo = ({ className = "h-10 w-auto" }) => (
 );
 
 // --- Components ---
-
-import { supabase } from './supabase';
 
 const DiagnosisModal = ({ isOpen, onClose }) => {
     const [formData, setFormData] = useState({
@@ -146,7 +145,7 @@ const DiagnosisModal = ({ isOpen, onClose }) => {
 
                                 <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
                                     <div>
-                                        <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">성함</label>
+                                        <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">존함</label>
                                         <input
                                             type="text"
                                             name="name"
@@ -165,7 +164,7 @@ const DiagnosisModal = ({ isOpen, onClose }) => {
                                             required
                                             value={formData.companyName}
                                             onChange={handleChange}
-                                            placeholder="핍트 (PIBT)"
+                                            placeholder="핍트 (PiBT)"
                                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-electric-blue/50 transition-colors"
                                         />
                                     </div>
