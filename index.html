@@ -14,63 +14,165 @@
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        :root {
+            --deep-navy: #0c0e1a;
+            --electric-blue: #2979FF;
+            --accent-teal: #00E5C9;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0c0e1a;
+            background-color: var(--deep-navy);
             color: white;
             scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+
+        /* Perspective for 3D effects */
+        .perspective-lg {
+            perspective: 2000px;
         }
 
         .glass {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
         }
 
         .glass-card {
-            background: rgba(26, 35, 126, 0.2);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(41, 121, 255, 0.2);
-            transition: all 0.3s ease;
+            background: rgba(26, 35, 126, 0.1);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(41, 121, 255, 0.15);
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
         .glass-card:hover {
-            border-color: rgba(41, 121, 255, 0.8);
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px -15px rgba(41, 121, 255, 0.4);
+            border-color: rgba(41, 121, 255, 0.5);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.5),
+                0 0 40px -10px rgba(41, 121, 255, 0.3);
+            background: rgba(26, 35, 126, 0.2);
         }
 
         .text-gradient {
-            background: linear-gradient(135deg, #ffffff 0%, #2979FF 100%);
+            background: linear-gradient(135deg, #ffffff 0%, var(--electric-blue) 50%, var(--accent-teal) 100%);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-size: 200% auto;
+            animation: shine 5s linear infinite;
         }
 
-        .bg-navy {
-            background-color: #1A237E;
+        @keyframes shine {
+            to {
+                background-position: 200% center;
+            }
         }
 
-        .bg-blue-electric {
-            background-color: #2979FF;
+        /* Animated Background Mesh */
+        .mesh-gradient {
+            background-color: var(--deep-navy);
+            background-image:
+                radial-gradient(at 0% 0%, rgba(41, 121, 255, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(27, 61, 110, 0.2) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(0, 229, 201, 0.1) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(79, 70, 229, 0.15) 0px, transparent 50%);
         }
 
-        .glow-hover:hover .icon-box {
-            transform: scale(1.1);
-            transition: transform 0.3s ease;
+        .glow-sphere {
+            position: absolute;
+            border-radius: 100%;
+            filter: blur(120px);
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.4;
+            animation: float 20s infinite alternate;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                transform: translate(10%, 10%) scale(1.2);
+            }
+        }
+
+        /* Reveal Animation */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .fade-in {
+            opacity: 0;
+            transition: opacity 1s ease-out;
+        }
+
+        .fade-in.active {
+            opacity: 1;
+        }
+
+        .stagger-1 {
+            transition-delay: 0.1s;
+        }
+
+        .stagger-2 {
+            transition-delay: 0.2s;
+        }
+
+        .stagger-3 {
+            transition-delay: 0.3s;
         }
 
         /* Modal Styles */
         #diagnosis-modal {
             display: none;
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
         #diagnosis-modal.active {
             display: flex;
             opacity: 1;
+        }
+
+        #diagnosis-modal>div {
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        #diagnosis-modal.active>div {
+            transform: scale(1) translateY(0);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--deep-navy);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border: 2px solid var(--deep-navy);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
     </style>
     <script>
@@ -78,8 +180,12 @@
             theme: {
                 extend: {
                     colors: {
-                        'deep-navy': '#1A237E',
+                        'deep-navy': '#0c0e1a',
                         'electric-blue': '#2979FF',
+                        'accent-teal': '#00E5C9',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     }
                 }
             }
@@ -90,12 +196,13 @@
 <body class="selection:bg-electric-blue selection:text-white">
 
     <!-- Navigation -->
-    <nav class="fixed w-full z-50 glass border-b border-white/10">
+    <nav class="fixed w-full z-50 glass border-b border-white/5 transition-all duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-20 items-center">
                 <div class="flex items-center space-x-2">
                     <!-- Inline SVG Logo -->
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200" class="h-10 w-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200"
+                        class="h-10 w-auto hover:opacity-80 transition-opacity cursor-pointer">
                         <defs>
                             <linearGradient id="markGradN" x1="0%" y1="0%" x2="100%" y2="100%">
                                 <stop offset="0%" style="stop-color:#1B3D6E" />
@@ -144,84 +251,192 @@
                             opacity="0.9" />
                     </svg>
                 </div>
-                <div class="hidden md:flex space-x-8 text-sm font-medium text-gray-300">
-                    <a href="#hero" class="hover:text-electric-blue transition-colors">Home</a>
-                    <a href="#ceo" class="hover:text-electric-blue transition-colors">CEO</a>
-                    <a href="#services" class="hover:text-electric-blue transition-colors">Services</a>
+                <div class="hidden md:flex space-x-10 text-sm font-semibold tracking-wide text-gray-400">
+                    <a href="#hero" class="hover:text-white transition-colors relative group">Home<span
+                            class="absolute -bottom-1 left-0 w-0 h-0.5 bg-electric-blue transition-all group-hover:w-full"></span></a>
+                    <a href="#ceo" class="hover:text-white transition-colors relative group">CEO<span
+                            class="absolute -bottom-1 left-0 w-0 h-0.5 bg-electric-blue transition-all group-hover:w-full"></span></a>
+                    <a href="#services" class="hover:text-white transition-colors relative group">Services<span
+                            class="absolute -bottom-1 left-0 w-0 h-0.5 bg-electric-blue transition-all group-hover:w-full"></span></a>
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Hero -->
-    <section id="hero" class="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-        <div class="absolute inset-0 z-0 opacity-40">
-            <div class="absolute inset-0 bg-gradient-to-b from-[#0c0e1a] via-transparent to-[#0c0e1a]"></div>
-            <!-- Background Decoration -->
-            <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/20 blur-[120px] rounded-full"></div>
-            <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-600/20 blur-[120px] rounded-full"></div>
-        </div>
+    <section id="hero"
+        class="mesh-gradient relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+        <!-- Glow Spheres -->
+        <div class="glow-sphere w-[500px] h-[500px] bg-electric-blue/20 top-[-10%] left-[-10%]"></div>
+        <div class="glow-sphere w-[600px] h-[600px] bg-indigo-600/10 bottom-[-20%] right-[-10%]"
+            style="animation-delay: -5s"></div>
+
         <div class="relative z-10 max-w-7xl mx-auto px-4 text-center">
             <span
-                class="inline-block px-4 py-1 rounded-full bg-electric-blue/10 border border-electric-blue/30 text-electric-blue text-sm font-semibold mb-6">
+                class="reveal stagger-1 inline-block px-5 py-2 rounded-full bg-electric-blue/10 border border-electric-blue/20 text-electric-blue text-xs font-bold mb-8 uppercase tracking-[0.2em]">
                 AI Business Partner
             </span>
-            <h1 class="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+            <h1 class="reveal stagger-1 text-5xl md:text-8xl font-black text-white mb-8 leading-[1.1] tracking-tight">
                 비즈니스 잠재력을<br />
                 <span class="text-gradient">AI로 현실화하다</span>
             </h1>
-            <p class="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
-                핍트(PiBT)는 기업의 디지털 트랜스포메이션을 넘어,<br />
+            <p class="reveal stagger-2 text-lg md:text-xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed">
+                핍트(PiBT)는 기업의 디지털 트랜스포메이션을 넘어,<br class="hidden sm:block" />
                 실질적인 ROI를 창출하는 맞춤형 AI 솔루션을 제공합니다.
             </p>
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div class="reveal stagger-3 flex flex-col sm:flex-row items-center justify-center gap-5">
                 <a href="#services"
-                    class="px-8 py-4 bg-electric-blue hover:bg-blue-600 text-white rounded-full font-bold transition-all transform hover:scale-105 shadow-lg shadow-blue-500/20">
-                    서비스 둘러보기
+                    class="group relative px-10 py-5 bg-electric-blue text-white rounded-full font-bold transition-all hover:scale-105 active:scale-95 shadow-[0_20px_40px_rgba(41,121,255,0.3)] overflow-hidden">
+                    <span class="relative z-10">서비스 둘러보기</span>
+                    <div
+                        class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                    </div>
                 </a>
                 <button onclick="openModal()"
-                    class="px-8 py-4 glass text-white rounded-full font-bold hover:bg-white/10 transition-all border border-white/20">
+                    class="px-10 py-5 glass text-white rounded-full font-bold hover:bg-white/5 transition-all border border-white/10 hover:border-white/20">
                     무료 AI 진단 시작
                 </button>
             </div>
         </div>
+
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-50">
+            <div class="w-px h-12 bg-gradient-to-b from-transparent to-white/40"></div>
+            <span class="text-[10px] uppercase tracking-widest font-bold">Scroll</span>
+        </div>
     </section>
 
     <!-- CEO -->
-    <section id="ceo" class="py-24 bg-[#0c0e1a]">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="grid md:grid-cols-2 gap-16 items-center">
-                <div class="relative flex justify-center md:justify-end">
-                    <div class="relative w-full max-w-sm">
+    <section id="ceo" class="py-32 bg-deep-navy relative overflow-hidden">
+        <!-- Decoration -->
+        <div class="absolute top-1/2 left-0 -translate-y-1/2 w-64 h-64 bg-accent-teal/5 blur-[100px] rounded-full">
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 relative z-10">
+            <div class="grid md:grid-cols-2 gap-20 items-center">
+                <div class="reveal relative flex justify-center md:justify-end">
+                    <div class="relative w-full max-w-sm group perspective-lg">
                         <div
-                            class="aspect-[3/4] rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-indigo-900 to-blue-900 group">
+                            class="aspect-[3/4] rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-indigo-900/20 to-blue-900/20 transition-transform duration-700 group-hover:rotate-y-12 group-hover:scale-105">
                             <img src="./public/ceo.jpg" alt="박병태 대표"
-                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                class="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-700">
+                            <!-- Overlay -->
+                            <div
+                                class="absolute inset-0 bg-gradient-to-t from-deep-navy via-transparent to-transparent opacity-60">
+                            </div>
                         </div>
+                        <!-- UI Badge -->
                         <div
-                            class="absolute -bottom-4 -right-4 p-6 glass rounded-2xl border border-electric-blue/20 shadow-2xl">
-                            <p class="text-white font-bold text-lg mb-0.5">박병태</p>
-                            <p class="text-gray-400 text-xs">CEO of PiBT</p>
+                            class="absolute -bottom-6 -right-6 p-8 glass rounded-3xl border border-white/10 shadow-2xl backdrop-blur-xl transition-transform duration-500 group-hover:translate-x-2 group-hover:-translate-y-2">
+                            <p class="text-white font-black text-xl mb-1">박병태</p>
+                            <p class="text-electric-blue text-xs font-bold uppercase tracking-widest">CEO of PiBT</p>
+                        </div>
+                        <!-- Background Frame -->
+                        <div
+                            class="absolute -top-4 -left-4 w-24 h-24 border-t-2 border-l-2 border-electric-blue/30 rounded-tl-3xl -z-10">
                         </div>
                     </div>
                 </div>
-                <div>
-                    <span class="text-electric-blue font-bold uppercase tracking-widest text-sm">CEO Message</span>
-                    <h2 class="text-4xl font-bold text-white mt-4 mb-8 leading-snug">
+
+                <div class="reveal">
+                    <div class="inline-flex items-center gap-2 mb-6">
+                        <div class="w-10 h-[2px] bg-electric-blue"></div>
+                        <span class="text-electric-blue font-bold uppercase tracking-[0.3em] text-xs">CEO Message</span>
+                    </div>
+                    <h2 class="text-4xl md:text-5xl font-black text-white mt-4 mb-10 leading-snug tracking-tight">
                         "AI는 더 이상 선택이 아닌,<br />
-                        현재의 생존 전략입니다."
+                        <span class="text-electric-blue">현재의 생존 전략</span>입니다."
                     </h2>
-                    <div class="space-y-6 text-gray-300 text-lg leading-relaxed">
-                        <p>
+                    <div class="space-y-8 text-gray-400 text-lg leading-relaxed font-medium">
+                        <p class="reveal stagger-1">
                             기술의 발전 속도가 경영의 의사결정 속도를 앞지르는 시대입니다.
                             핍트는 복잡한 AI 기술을 기업의 실제 언어로 번역하고, 인프라 구축부터 인재 양성까지 전 과정을 동행합니다.
                         </p>
-                        <p>
+                        <p class="reveal stagger-2 text-white/90">
                             우리의 목표는 단순한 자동화가 아닙니다.
                             구성원 모두가 AI를 도구로서 자유롭게 활용하여, 기업 고유의 잠재력을 극대화하는 것입니다.
                         </p>
-                        <p class="font-semibold text-white">
-                            당신의 비즈니스를 AI 현실로 연결하겠습니다.
+                        <div class="reveal stagger-3 pt-6">
+                            <p class="font-black text-white text-2xl italic tracking-tight">
+                                "당신의 비즈니스를 AI 현실로 연결하겠습니다."
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services (Bento Grid) -->
+    <section id="services" class="py-32 relative">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="reveal text-center mb-20">
+                <span class="text-xs font-black text-electric-blue uppercase tracking-[0.4em] mb-4 block">Our
+                    Expertise</span>
+                <h2 class="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight">Core Services</h2>
+                <p class="text-gray-500 max-w-xl mx-auto text-lg">핍트만의 3대 핵심 사업으로 기업의 AI 기반 성장을 가속화합니다.</p>
+            </div>
+
+            <!-- Bento Grid Layout -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 h-auto md:h-[600px]">
+                <!-- Service 1: AI Consulting (Large) -->
+                <div
+                    class="reveal md:col-span-7 md:row-span-2 glass-card rounded-[2.5rem] p-12 flex flex-col justify-between group overflow-hidden relative">
+                    <div
+                        class="absolute -top-24 -right-24 w-64 h-64 bg-electric-blue/10 blur-[100px] rounded-full group-hover:bg-electric-blue/20 transition-colors">
+                    </div>
+                    <div class="relative z-10">
+                        <div
+                            class="w-16 h-16 bg-electric-blue/10 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500">
+                            <i data-lucide="bar-chart-3" class="w-8 h-8 text-electric-blue"></i>
+                        </div>
+                        <span class="text-xs font-bold text-electric-blue uppercase tracking-widest mb-3 block">Process
+                            Optimization</span>
+                        <h3 class="text-3xl md:text-4xl font-black text-white mb-6">AI 컨설팅</h3>
+                        <p class="text-gray-400 text-lg leading-relaxed max-w-md">비즈니스 프로세스 분석을 통한 최적의 AI 도입 전략을 수립합니다.
+                            단순 도입을 넘어 실제 가동 가능한 ROI를 도출합니다.</p>
+                    </div>
+                    <div
+                        class="relative z-10 mt-12 flex items-center text-white/50 group-hover:text-white transition-colors gap-2 font-bold cursor-pointer">
+                        <span>자세히 보기</span>
+                        <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-2 transition-transform"></i>
+                    </div>
+                </div>
+
+                <!-- Service 2: LLM Building -->
+                <div
+                    class="reveal stagger-1 md:col-span-5 glass-card rounded-[2.5rem] p-10 group overflow-hidden relative">
+                    <div class="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <i data-lucide="brain-circuit" class="w-24 h-24 text-electric-blue"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <div class="w-12 h-12 bg-indigo-500/10 rounded-xl flex items-center justify-center mb-6">
+                            <i data-lucide="brain-circuit" class="w-6 h-6 text-indigo-400"></i>
+                        </div>
+                        <span
+                            class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2 block">Security
+                            AI</span>
+                        <h3 class="text-2xl font-black text-white mb-4">LLM 구축</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">기업 전용 보안 LLM 및 RAG 시스템을 설계하고 구현하여 데이터 주권을 지킵니다.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Service 3: AI Education -->
+                <div
+                    class="reveal stagger-2 md:col-span-5 glass-card rounded-[2.5rem] p-10 group overflow-hidden relative">
+                    <div class="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <i data-lucide="graduation-cap" class="w-24 h-24 text-accent-teal"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <div class="w-12 h-12 bg-accent-teal/10 rounded-xl flex items-center justify-center mb-6">
+                            <i data-lucide="graduation-cap" class="w-6 h-6 text-accent-teal"></i>
+                        </div>
+                        <span
+                            class="text-[10px] font-bold text-accent-teal uppercase tracking-widest mb-2 block">Digital
+                            Literacy</span>
+                        <h3 class="text-2xl font-black text-white mb-4">AI 교육</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">임직원 실전 프롬프트 엔지니어링 및 AI 리터러시 강화 교육을 통해 문화를 바꿉니다.
                         </p>
                     </div>
                 </div>
@@ -229,68 +444,73 @@
         </div>
     </section>
 
-    <!-- Services -->
-    <section id="services" class="py-24 relative overflow-hidden">
+    <!-- Process -->
+    <section id="process" class="py-32 bg-deep-navy/50 relative overflow-hidden">
         <div class="max-w-7xl mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-white mb-4">Core Services</h2>
-                <p class="text-gray-400">핍트만의 3대 핵심 사업으로 기업의 AI 기반 성장을 가속화합니다.</p>
+            <div class="reveal text-center mb-20">
+                <span class="text-xs font-black text-electric-blue uppercase tracking-[0.4em] mb-4 block">The
+                    Journey</span>
+                <h2 class="text-4xl md:text-5xl font-black text-white mb-6">How We Work</h2>
+                <p class="text-gray-500">핍트는 체계적인 4단계 프로세스를 통해 기업의 AI 도입을 성공으로 이끕니다.</p>
             </div>
-            <div class="grid md:grid-cols-3 gap-8">
-                <!-- Service 1 -->
-                <div class="glass-card p-10 rounded-3xl glow-hover relative overflow-hidden group">
-                    <div
-                        class="absolute inset-0 bg-gradient-to-br from-electric-blue/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    </div>
-                    <div class="relative z-10">
-                        <div class="mb-6 icon-box"><i data-lucide="bar-chart-3" class="w-8 h-8 text-electric-blue"></i>
-                        </div>
-                        <span class="text-xs font-bold text-electric-blue uppercase tracking-tighter mb-2 block">Process
-                            Optimization</span>
-                        <h3 class="text-2xl font-bold text-white mb-4">AI 컨설팅</h3>
-                        <p class="text-gray-400 leading-relaxed mb-6">비즈니스 프로세스 분석을 통한 최적의 AI 도입 전략 및 기대 ROI 도출.</p>
-                    </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
+                <!-- Connector Line (Desktop) -->
+                <div
+                    class="hidden md:block absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-y-1/2 z-0">
                 </div>
-                <!-- Service 2 -->
-                <div class="glass-card p-10 rounded-3xl glow-hover relative overflow-hidden group">
+
+                <!-- Step 1 -->
+                <div class="reveal stagger-1 flex flex-col items-center text-center relative z-10 group">
                     <div
-                        class="absolute inset-0 bg-gradient-to-br from-electric-blue/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                        class="w-16 h-16 rounded-2xl glass border border-white/10 flex items-center justify-center mb-8 group-hover:bg-electric-blue transition-all duration-500 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(41,121,255,0.4)]">
+                        <span class="text-xl font-black text-white group-hover:scale-110 transition-transform">01</span>
                     </div>
-                    <div class="relative z-10">
-                        <div class="mb-6 icon-box"><i data-lucide="brain-circuit"
-                                class="w-8 h-8 text-electric-blue"></i></div>
-                        <span
-                            class="text-xs font-bold text-electric-blue uppercase tracking-tighter mb-2 block">Security
-                            AI</span>
-                        <h3 class="text-2xl font-bold text-white mb-4">LLM 구축</h3>
-                        <p class="text-gray-400 leading-relaxed mb-6">기업 전용 보안 LLM 및 RAG 시스템 설계 및 구현.</p>
-                    </div>
+                    <h4 class="text-xl font-bold text-white mb-3">비즈니스 분석</h4>
+                    <p class="text-gray-500 text-sm">현재 기업의 프로세스와 데이터를 분석하여 최적의 AI 기회를 포착합니다.</p>
                 </div>
-                <!-- Service 3 -->
-                <div class="glass-card p-10 rounded-3xl glow-hover relative overflow-hidden group">
+
+                <!-- Step 2 -->
+                <div class="reveal stagger-2 flex flex-col items-center text-center relative z-10 group">
                     <div
-                        class="absolute inset-0 bg-gradient-to-br from-electric-blue/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                        class="w-16 h-16 rounded-2xl glass border border-white/10 flex items-center justify-center mb-8 group-hover:bg-indigo-600 transition-all duration-500 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(79,70,229,0.4)]">
+                        <span class="text-xl font-black text-white group-hover:scale-110 transition-transform">02</span>
                     </div>
-                    <div class="relative z-10">
-                        <div class="mb-6 icon-box"><i data-lucide="graduation-cap"
-                                class="w-8 h-8 text-electric-blue"></i></div>
-                        <span class="text-xs font-bold text-electric-blue uppercase tracking-tighter mb-2 block">Digital
-                            Literacy</span>
-                        <h3 class="text-2xl font-bold text-white mb-4">AI 교육</h3>
-                        <p class="text-gray-400 leading-relaxed mb-6">임직원 실전 프롬프트 엔지니어링 및 AI 리터러시 강화 교육.</p>
+                    <h4 class="text-xl font-bold text-white mb-3">전략 및 설계</h4>
+                    <p class="text-gray-500 text-sm">보안과 성능을 고려한 맞춤형 AI 아키텍처 및 도입 로드맵을 설계합니다.</p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="reveal stagger-3 flex flex-col items-center text-center relative z-10 group">
+                    <div
+                        class="w-16 h-16 rounded-2xl glass border border-white/10 flex items-center justify-center mb-8 group-hover:bg-accent-teal transition-all duration-500 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(0,229,201,0.4)]">
+                        <span class="text-xl font-black text-white group-hover:scale-110 transition-transform">03</span>
                     </div>
+                    <h4 class="text-xl font-bold text-white mb-3">솔루션 구축</h4>
+                    <p class="text-gray-500 text-sm">최신 LLM 기술과 RAG 시스템을 활용하여 고객사 맞춤형 솔루션을 개발합니다.</p>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="reveal stagger-1 flex flex-col items-center text-center relative z-10 group">
+                    <div
+                        class="w-16 h-16 rounded-2xl glass border border-white/10 flex items-center justify-center mb-8 group-hover:bg-white group-hover:text-deep-navy transition-all duration-500 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(255,255,255,0.4)]">
+                        <span class="text-xl font-black text-white group-hover:scale-110 transition-transform">04</span>
+                    </div>
+                    <h4 class="text-xl font-bold text-white mb-3">내재화 및 운영</h4>
+                    <p class="text-gray-500 text-sm">실전 교육과 지속적인 최적화를 통해 자체적인 AI 활용 역량을 강화합니다.</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="py-12 border-t border-white/10 bg-[#0c0e1a]">
-        <div class="max-w-7xl mx-auto px-4 text-center sm:text-left">
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-8">
-                <div>
-                    <div class="flex items-center space-x-2 mb-4 justify-center sm:justify-start">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200" class="h-8 w-auto">
+    <footer class="py-20 border-t border-white/5 bg-deep-navy">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+                <!-- Branding -->
+                <div class="md:col-span-2">
+                    <div class="flex items-center space-x-2 mb-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200" class="h-10 w-auto opacity-90">
                             <defs>
                                 <linearGradient id="markGradF" x1="0%" y1="0%" x2="100%" y2="100%">
                                     <stop offset="0%" style="stop-color:#1B3D6E" />
@@ -300,50 +520,63 @@
                                     <stop offset="0%" style="stop-color:#00E5C9" />
                                     <stop offset="100%" style="stop-color:#38AFFF" />
                                 </linearGradient>
-                                <filter id="glowF">
-                                    <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-                                    <feMerge>
-                                        <feMergeNode in="coloredBlur" />
-                                        <feMergeNode in="SourceGraphic" />
-                                    </feMerge>
-                                </filter>
                             </defs>
                             <rect width="480" height="200" fill="#080F1C" rx="12" />
-                            <pattern id="gridF" width="20" height="20" patternUnits="userSpaceOnUse">
-                                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#FFFFFF" stroke-width="0.3"
-                                    opacity="0.04" />
-                            </pattern>
-                            <rect width="480" height="200" fill="url(#gridF)" rx="12" />
-                            <g transform="translate(100,100)">
-                                <polygon points="0,-72 62.4,-36 62.4,36 0,72 -62.4,36 -62.4,-36" fill="url(#markGradF)"
-                                    stroke="url(#accentGradF)" stroke-width="2" />
-                                <polygon points="0,-38 33,-19 33,19 0,38 -33,19 -33,-19" fill="none" stroke="#FFFFFF"
-                                    stroke-width="0.7" opacity="0.1" />
-                                <circle cx="0" cy="0" r="7" fill="url(#accentGradF)" filter="url(#glowF)" />
-                                <line x1="0" y1="0" x2="34" y2="-28" stroke="url(#accentGradF)" stroke-width="2.2"
-                                    stroke-linecap="round" />
-                                <circle cx="34" cy="-28" r="5" fill="#00E5C9" filter="url(#glowF)" />
-                                <line x1="0" y1="0" x2="34" y2="28" stroke="url(#accentGradF)" stroke-width="2.2"
-                                    stroke-linecap="round" />
-                                <circle cx="34" cy="28" r="5" fill="#38AFFF" filter="url(#glowF)" />
-                                <line x1="0" y1="0" x2="-40" y2="0" stroke="url(#accentGradF)" stroke-width="2.2"
-                                    stroke-linecap="round" />
-                                <circle cx="-40" cy="0" r="5" fill="#00E5C9" filter="url(#glowF)" opacity="0.9" />
-                                <path d="M 34,-28 Q 52,0 34,28" fill="none" stroke="url(#accentGradF)"
-                                    stroke-width="1.5" stroke-dasharray="4 3" opacity="0.6" stroke-linecap="round" />
-                            </g>
-                            <text x="188" y="118"
-                                font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif"
-                                font-size="72" font-weight="800" letter-spacing="-2" fill="#FFFFFF">핍트</text>
-                            <rect x="188" y="128" width="188" height="3.5" rx="1.75" fill="url(#accentGradF)"
-                                opacity="0.9" />
+                            <text x="188" y="118" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif"
+                                font-size="72" font-weight="800" fill="#FFFFFF">핍트</text>
+                            <rect x="188" y="128" width="188" height="4" fill="url(#accentGradF)" />
                         </svg>
                     </div>
-                    <p class="text-gray-500 text-sm">Potentials into AI Reality.</p>
+                    <p class="text-gray-500 text-lg max-w-sm leading-relaxed mb-8">
+                        Potentials into AI Reality.<br />
+                        당신의 비즈니스 잠재력을 AI로 연결합니다.
+                    </p>
+                    <div class="flex gap-4">
+                        <div
+                            class="w-10 h-10 rounded-full glass flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 cursor-pointer transition-all">
+                            <i data-lucide="twitter" class="w-5 h-5"></i></div>
+                        <div
+                            class="w-10 h-10 rounded-full glass flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 cursor-pointer transition-all">
+                            <i data-lucide="linkedin" class="w-5 h-5"></i></div>
+                        <div
+                            class="w-10 h-10 rounded-full glass flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 cursor-pointer transition-all">
+                            <i data-lucide="mail" class="w-5 h-5"></i></div>
+                    </div>
                 </div>
-                <div class="text-sm text-gray-500">
-                    <p>대표이사: 박병태 | contact@pibt.ai</p>
-                    <p>© 2026 핍트 Corp.</p>
+
+                <!-- Links -->
+                <div>
+                    <h5 class="text-white font-bold mb-6">Company</h5>
+                    <ul class="space-y-4 text-gray-500">
+                        <li><a href="#hero" class="hover:text-white transition-colors">Home</a></li>
+                        <li><a href="#ceo" class="hover:text-white transition-colors">CEO</a></li>
+                        <li><a href="#services" class="hover:text-white transition-colors">Services</a></li>
+                        <li><a href="#process" class="hover:text-white transition-colors">Our Process</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact -->
+                <div>
+                    <h5 class="text-white font-bold mb-6">Contact</h5>
+                    <ul class="space-y-4 text-gray-500">
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="map-pin" class="w-5 h-5 text-electric-blue shrink-0"></i>
+                            <span>서울특별시 강남구 테헤란로</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i data-lucide="mail" class="w-5 h-5 text-electric-blue shrink-0"></i>
+                            <span>contact@pibt.ai</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div
+                class="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-600">
+                <p>© 2026 핍트 (PiBT) Corp. All rights reserved.</p>
+                <div class="flex gap-8">
+                    <a href="#" class="hover:text-white">이용약관</a>
+                    <a href="#" class="hover:text-white">개인정보처리방침</a>
                 </div>
             </div>
         </div>
@@ -353,43 +586,44 @@
     <div id="diagnosis-modal"
         class="fixed inset-0 z-[100] items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
         <div
-            class="relative w-full max-w-md glass-card p-8 rounded-3xl border border-white/20 shadow-2xl overflow-hidden">
+            class="relative w-full max-w-md glass p-10 rounded-[2rem] border border-white/10 shadow-2xl overflow-hidden">
             <!-- Modal Background Glow -->
             <div class="absolute -top-24 -right-24 w-48 h-48 bg-electric-blue/20 blur-3xl rounded-full"></div>
 
-            <div id="modal-form-content">
-                <div class="flex justify-between items-start mb-6 relative z-10">
+            <div id="modal-form-content" class="relative z-10">
+                <div class="flex justify-between items-start mb-8">
                     <div>
-                        <h3 class="text-2xl font-bold text-white mb-2">무료 AI 도입 자가진단</h3>
-                        <p class="text-gray-400 text-sm">정보를 입력하시면 맞춤형 리포트를 보내드립니다.</p>
+                        <h3 class="text-2xl font-black text-white mb-2 tracking-tight">무료 AI 도입 자가진단</h3>
+                        <p class="text-gray-500 text-sm">정보를 입력하시면 맞춤형 리포트를 보내드립니다.</p>
                     </div>
-                    <button onclick="closeModal()" class="text-gray-400 hover:text-white transition-colors p-1">
+                    <button onclick="closeModal()" class="text-gray-500 hover:text-white transition-colors p-1">
                         <i data-lucide="x" class="w-6 h-6"></i>
                     </button>
                 </div>
 
-                <form id="diagnosis-form" onsubmit="handleSubmit(event)" class="space-y-4 relative z-10">
+                <form id="diagnosis-form" onsubmit="handleSubmit(event)" class="space-y-5">
                     <div>
                         <label
-                            class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">존함</label>
+                            class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">존함</label>
                         <input type="text" id="diag-name" required placeholder="홍길동"
-                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-electric-blue/50 transition-colors">
+                            class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-electric-blue/50 transition-all placeholder:text-gray-700">
                     </div>
                     <div>
                         <label
-                            class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">회사명</label>
+                            class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">회사명</label>
                         <input type="text" id="diag-company" required placeholder="핍트 (PiBT)"
-                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-electric-blue/50 transition-colors">
+                            class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-electric-blue/50 transition-all placeholder:text-gray-700">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">이메일
+                        <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">이메일
                             주소</label>
                         <input type="email" id="diag-email" required placeholder="contact@pibt.ai"
-                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-electric-blue/50 transition-colors">
+                            class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-electric-blue/50 transition-all placeholder:text-gray-700">
                     </div>
                     <button type="submit" id="diag-submit-btn"
-                        class="w-full py-4 bg-electric-blue hover:bg-blue-600 text-white rounded-xl font-bold transition-all mt-6 shadow-lg shadow-blue-500/20 flex items-center justify-center">
-                        진단 리포트 신청하기
+                        class="w-full py-5 bg-electric-blue hover:bg-blue-600 text-white rounded-2xl font-black transition-all mt-8 shadow-[0_20px_40px_rgba(41,121,255,0.2)] flex items-center justify-center gap-2">
+                        <span>진단 리포트 신청하기</span>
+                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
                     </button>
                 </form>
             </div>
@@ -397,20 +631,20 @@
             <!-- Success State -->
             <div id="modal-success-content" class="hidden text-center py-8 relative z-10">
                 <div
-                    class="w-20 h-20 bg-green-500/20 border border-green-500/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <i data-lucide="check" class="text-green-500 w-10 h-10"></i>
+                    class="w-20 h-20 bg-accent-teal/10 border border-accent-teal/20 rounded-full flex items-center justify-center mx-auto mb-8">
+                    <i data-lucide="check" class="text-accent-teal w-10 h-10"></i>
                 </div>
-                <h3 class="text-2xl font-bold text-white mb-2">신청해주셔서 감사합니다!</h3>
-                <p class="text-gray-400 mb-8 leading-relaxed">
+                <h3 class="text-2xl font-black text-white mb-2 tracking-tight">신청해주셔서 감사합니다!</h3>
+                <p class="text-gray-500 mb-10 leading-relaxed">
                     입력하신 정보로 24시간 내로<br>분석 리포트를 보내드립니다.
                 </p>
-                <div class="space-y-3">
+                <div class="space-y-4">
                     <a href="#"
-                        class="block w-full py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm font-semibold transition-all border border-white/10">
-                        <i data-lucide="download" class="inline-block w-4 h-4 mr-2"></i> 자가진단 체크리스트 PDF 다운로드
+                        class="block w-full py-4 bg-white/10 hover:bg-white/20 text-white rounded-2xl text-sm font-bold transition-all border border-white/10">
+                        <i data-lucide="download" class="inline-block w-4 h-4 mr-2"></i> 자가진단 체크리스트 PDF
                     </a>
                     <button onclick="closeModal()"
-                        class="block w-full text-gray-500 hover:text-white text-sm transition-colors py-2">
+                        class="block w-full text-gray-600 hover:text-white text-sm font-bold transition-colors py-2">
                         닫기
                     </button>
                 </div>
@@ -422,7 +656,34 @@
         // Init Icons
         lucide.createIcons();
 
-        // Modal Logic
+        // Reveal Animation on Scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // Nav Scroll Effect
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 50) {
+                nav.classList.add('py-2', 'bg-deep-navy/90');
+                nav.classList.remove('py-0');
+            } else {
+                nav.classList.remove('py-2', 'bg-deep-navy/90');
+                nav.classList.add('py-0');
+            }
+        });
+
         // Supabase Init
         const supabaseUrl = 'https://ckanwbynvyuqxmenxvlr.supabase.co';
         const supabaseKey = 'sb_publishable_HVZkkPEB7-5zzLqn93h5jA_PdKWJXWk';
@@ -441,14 +702,14 @@
         function closeModal() {
             modal.classList.remove('active');
             document.body.style.overflow = '';
-            // Reset modal state after closing animation
             setTimeout(() => {
                 formContent.classList.remove('hidden');
                 successContent.classList.add('hidden');
                 document.getElementById('diagnosis-form').reset();
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '진단 리포트 신청하기';
-            }, 300);
+                submitBtn.innerHTML = '<span>진단 리포트 신청하기</span><i data-lucide="arrow-right" class="w-5 h-5"></i>';
+                lucide.createIcons();
+            }, 400);
         }
 
         async function handleSubmit(e) {
@@ -460,11 +721,11 @@
 
             submitBtn.disabled = true;
             submitBtn.innerHTML = `
-                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                처리 중...
+                <span>처리 중...</span>
             `;
 
             try {
@@ -480,15 +741,16 @@
 
                 formContent.classList.add('hidden');
                 successContent.classList.remove('hidden');
+                lucide.createIcons();
             } catch (error) {
                 console.error('Error saving:', error);
                 alert('신청 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '진단 리포트 신청하기';
+                submitBtn.innerHTML = '<span>진단 리포트 신청하기</span><i data-lucide="arrow-right" class="w-5 h-5"></i>';
+                lucide.createIcons();
             }
         }
 
-        // Close modal on background click
         modal.addEventListener('click', (e) => {
             if (e.target === modal) closeModal();
         });
