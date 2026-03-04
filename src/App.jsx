@@ -59,12 +59,58 @@ const Logo = ({ className = "h-10 w-auto" }) => (
 
 // --- Components ---
 
-const DiagnosisModal = ({ isOpen, onClose }) => {
-    const [isSubmitted, setIsSubmitted] = useState(false);
+import { supabase } from './supabase';
 
-    const handleSubmit = (e) => {
+const DiagnosisModal = ({ isOpen, onClose }) => {
+    const [formData, setFormData] = useState({
+        name: '',
+        companyName: '',
+        email: ''
+    });
+    const [status, setStatus] = useState('idle'); // idle, loading, success, error
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        setIsSubmitted(true);
+        setStatus('loading');
+
+        try {
+            const { error } = await supabase
+                .from('diagnostic_requests')
+                .insert([
+                    {
+                        name: formData.name,
+                        company_name: formData.companyName,
+                        email: formData.email
+                    }
+                ]);
+
+            if (error) throw error;
+
+            setStatus('success');
+            setFormData({ name: '', companyName: '', email: '' });
+        } catch (error) {
+            console.error('Error saving diagnosis request:', error);
+            setStatus('error');
+            alert('신청 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+        } finally {
+            if (status !== 'error') {
+                // Keep success state visible or reset after timeout if needed
+            }
+        }
+    };
+
+    const handleClose = () => {
+        onClose();
+        // Reset state after closure
+        setTimeout(() => {
+            setStatus('idle');
+            setFormData({ name: '', companyName: '', email: '' });
+        }, 300);
     };
 
     return (
@@ -75,7 +121,7 @@ const DiagnosisModal = ({ isOpen, onClose }) => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        onClick={onClose}
+                        onClick={handleClose}
                         className="absolute inset-0 bg-black/80 backdrop-blur-sm"
                     />
                     <motion.div
@@ -86,14 +132,14 @@ const DiagnosisModal = ({ isOpen, onClose }) => {
                     >
                         <div className="absolute -top-24 -right-24 w-48 h-48 bg-electric-blue/20 blur-3xl rounded-full"></div>
 
-                        {!isSubmitted ? (
+                        {status !== 'success' ? (
                             <>
                                 <div className="flex justify-between items-start mb-6 relative z-10">
                                     <div>
                                         <h3 className="text-2xl font-bold text-white mb-2">무료 AI 도입 자가진단</h3>
                                         <p className="text-gray-400 text-sm">정보를 입력하시면 맞춤형 리포트를 보내드립니다.</p>
                                     </div>
-                                    <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors p-1">
+                                    <button onClick={handleClose} className="text-gray-400 hover:text-white transition-colors p-1">
                                         <X className="w-6 h-6" />
                                     </button>
                                 </div>
@@ -101,18 +147,54 @@ const DiagnosisModal = ({ isOpen, onClose }) => {
                                 <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
                                     <div>
                                         <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">성함</label>
-                                        <input type="text" required placeholder="홍길동" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-electric-blue/50 transition-colors" />
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            required
+                                            value={formData.name}
+                                            onChange={handleChange}
+                                            placeholder="홍길동"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-electric-blue/50 transition-colors"
+                                        />
                                     </div>
                                     <div>
                                         <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">회사명</label>
-                                        <input type="text" required placeholder="핍트 (PIBT)" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-electric-blue/50 transition-colors" />
+                                        <input
+                                            type="text"
+                                            name="companyName"
+                                            required
+                                            value={formData.companyName}
+                                            onChange={handleChange}
+                                            placeholder="핍트 (PIBT)"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-electric-blue/50 transition-colors"
+                                        />
                                     </div>
                                     <div>
                                         <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">이메일 주소</label>
-                                        <input type="email" required placeholder="contact@pibt.ai" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-electric-blue/50 transition-colors" />
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            required
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                            placeholder="contact@pibt.ai"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-electric-blue/50 transition-colors"
+                                        />
                                     </div>
-                                    <button type="submit" className="w-full py-4 bg-electric-blue hover:bg-blue-600 text-white rounded-xl font-bold transition-all mt-6 shadow-lg shadow-blue-500/20">
-                                        진단 리포트 신청하기
+                                    <button
+                                        type="submit"
+                                        disabled={status === 'loading'}
+                                        className={`w-full py-4 bg-electric-blue hover:bg-blue-600 text-white rounded-xl font-bold transition-all mt-6 shadow-lg shadow-blue-500/20 flex items-center justify-center ${status === 'loading' ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                    >
+                                        {status === 'loading' ? (
+                                            <span className="flex items-center">
+                                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                처리 중...
+                                            </span>
+                                        ) : '진단 리포트 신청하기'}
                                     </button>
                                 </form>
                             </>
@@ -121,15 +203,15 @@ const DiagnosisModal = ({ isOpen, onClose }) => {
                                 <div className="w-20 h-20 bg-green-500/20 border border-green-500/30 rounded-full flex items-center justify-center mx-auto mb-6">
                                     <Check className="text-green-500 w-10 h-10" />
                                 </div>
-                                <h3 className="text-2xl font-bold text-white mb-2">신청해주셔서 감사합니다!</h3>
+                                <h3 className="text-2xl font-bold text-white mb-2">신청이 완료되었습니다!</h3>
                                 <p className="text-gray-400 mb-8 leading-relaxed">
-                                    입력하신 정보로 24시간 내로<br />분석 리포트를 보내드립니다.
+                                    24시간 내로 리포트를 보내드립니다.
                                 </p>
                                 <div className="space-y-3">
                                     <a href="#" className="flex items-center justify-center w-full py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm font-semibold transition-all border border-white/10">
                                         <Download className="w-4 h-4 mr-2" /> 자가진단 체크리스트 PDF 다운로드
                                     </a>
-                                    <button onClick={onClose} className="block w-full text-gray-500 hover:text-white text-sm transition-colors py-2">
+                                    <button onClick={handleClose} className="block w-full text-gray-500 hover:text-white text-sm transition-colors py-2">
                                         닫기
                                     </button>
                                 </div>
